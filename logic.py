@@ -40,7 +40,10 @@ def add_two(mat):
     while mat[a][b] != 0:
         a = randint(0, len(mat) - 1)
         b = randint(0, len(mat) - 1)
-    mat[a][b] = 2
+    if random() < 0.1:
+        mat[a][b] = 4
+    else:
+        mat[a][b] = 2
     return mat
 
 
