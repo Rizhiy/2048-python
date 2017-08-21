@@ -44,6 +44,7 @@ class GameGrid(Frame):
         self.init_grid()
         # Initialise the board
         self.matrix = add_two(add_two(new_game(4)))
+        self.score = 0
         self.update_grid_cells()
 
     def init_grid(self):
@@ -85,8 +86,9 @@ class GameGrid(Frame):
         else:
             key = event
         if key in self.commands:
-            self.matrix, done = self.commands[key](self.matrix)
+            self.matrix, done, score = self.commands[key](self.matrix, self.score)
             if done:
+                self.score = score
                 self.matrix = add_two(self.matrix)
                 self.update_grid_cells()
                 if game_state(self.matrix) == 'win':
