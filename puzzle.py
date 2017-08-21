@@ -42,10 +42,9 @@ class GameGrid(Frame):
 
         self.grid_cells = []
         self.init_grid()
+        # Initialise the board
         self.matrix = add_two(add_two(new_game(4)))
         self.update_grid_cells()
-
-        self.mainloop()
 
     def init_grid(self):
         background = Frame(self, bg=BACKGROUND_COLOR_GAME, width=SIZE, height=SIZE)
@@ -81,9 +80,12 @@ class GameGrid(Frame):
         self.update_idletasks()
 
     def key_down(self, event):
-        key = repr(event.char)
+        if type(event) == 'tk.Event':
+            key = repr(event.char)
+        else:
+            key = event
         if key in self.commands:
-            self.matrix, done = self.commands[repr(event.char)](self.matrix)
+            self.matrix, done = self.commands[key](self.matrix)
             if done:
                 self.matrix = add_two(self.matrix)
                 self.update_grid_cells()
@@ -103,3 +105,4 @@ class GameGrid(Frame):
 
 if __name__ == '__main__':
     gamegrid = GameGrid()
+    gamegrid.mainloop()
