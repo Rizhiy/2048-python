@@ -1,3 +1,4 @@
+from enum import Enum
 from tkinter import *
 from twenty_forty_eight_python.logic import *
 from random import *
@@ -27,6 +28,34 @@ KEY_LEFT = "'a'"
 KEY_RIGHT = "'d'"
 
 
+class Moves(Enum):
+    UP = 0
+    DOWN = 1
+    LEFT = 2
+    RIGHT = 3
+
+
+class TheGame:
+    def __init__(self):
+        self.commands = {Moves.UP: up, Moves.DOWN: down, Moves.LEFT: left, Moves.RIGHT: right}
+        self.matrix = add_two(add_two(new_game(4)))
+        self.score = 0
+        self.sudden_death = False
+
+    def move(self, move: Moves):
+        self.matrix, done, score = self.commands[move](self.matrix, self.score)
+        if done:
+            self.score = score
+            self.matrix = add_two(self.matrix)
+            if game_state(self.matrix) == 'win':
+                return 1
+            if game_state(self.matrix) == 'lose':
+                return -1
+            return 0
+        elif self.sudden_death:
+            return -1
+
+
 class GameGrid(Frame):
     def __init__(self):
         Frame.__init__(self)
@@ -35,16 +64,13 @@ class GameGrid(Frame):
         self.master.title('2048')
         self.master.bind("<Key>", self.key_down)
 
-        # self.gamelogic = gamelogic
-        self.commands = {KEY_UP: up, KEY_DOWN: down, KEY_LEFT: left, KEY_RIGHT: right,
-                         KEY_UP_ALT: up, KEY_DOWN_ALT: down, KEY_LEFT_ALT: left,
-                         KEY_RIGHT_ALT: right}
+        self.moves = {KEY_UP: Moves.UP, KEY_DOWN: Moves.DOWN,
+                      KEY_LEFT: Moves.LEFT, KEY_RIGHT: Moves.RIGHT}
 
         self.grid_cells = []
         self.init_grid()
         # Initialise the board
-        self.matrix = add_two(add_two(new_game(4)))
-        self.score = 0
+        self.game = TheGame()
         self.update_grid_cells()
 
     def init_grid(self):
@@ -64,10 +90,6 @@ class GameGrid(Frame):
 
             self.grid_cells.append(grid_row)
 
-    @staticmethod
-    def gen():
-        return randint(0, GRID_LEN - 1)
-
     def update_grid_cells(self):
         for i in range(GRID_LEN):
             for j in range(GRID_LEN):
@@ -81,33 +103,20 @@ class GameGrid(Frame):
         self.update_idletasks()
 
     def key_down(self, event):
-        if type(event) == 'tk.Event':
-            key = repr(event.char)
-        else:
-            key = event
-        if key in self.commands:
-            self.matrix, done, score = self.commands[key](self.matrix, self.score)
-            if done:
-                self.score = score
-                self.matrix = add_two(self.matrix)
+        key = repr(event.char)
+        if key in self.moves:
+            if self.game.move(self.moves[key]) == 0:
                 self.update_grid_cells()
                 if game_state(self.matrix) == 'win':
                     self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Win!", bg=BACKGROUND_COLOR_CELL_EMPTY)
-                    return 1
                 if game_state(self.matrix) == 'lose':
                     self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Lose!", bg=BACKGROUND_COLOR_CELL_EMPTY)
-                    return -1
-            else:
-                return -1
-        return 0
 
-    def generate_next(self):
-        index = (self.gen(), self.gen())
-        while self.matrix[index[0]][index[1]] != 0:
-            index = (self.gen(), self.gen())
-        self.matrix[index[0]][index[1]] = 2
+    @property
+    def matrix(self):
+        return self.game.matrix
 
 
 if __name__ == '__main__':
