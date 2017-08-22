@@ -34,7 +34,7 @@ def new_game(n):
 # Must ensure that it is created on a zero entry
 # 1 mark for creating the correct loop
 
-def add_two(mat):
+def add_number(mat):
     a = randint(0, len(mat) - 1)
     b = randint(0, len(mat) - 1)
     while mat[a][b] != 0:
